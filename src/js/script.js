@@ -3,7 +3,22 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let connexion = new MovieDb();      //1h28min43sec
 
-    connexion.requeteDernierFilm();     //la requete html de la fonction "requeteDernierFilm" a été apelé
+
+    if(document.location.pathname.search("fiche-film.html") > 0) {
+        let params = new URL(document.location).searchParams;
+        console.log(params);
+        connexion.requeteInfoFilm(params.get("id"));
+
+
+    }
+    else {
+
+        connexion.requeteDernierFilm();     //la requete html de la fonction "requeteDernierFilm" a été apelé
+
+    }
+
+    console.log(document.location.pathname.search("fiche-film.html"));
+
 
 })
 
@@ -39,10 +54,115 @@ class MovieDb {
         console.log("afficherDernierFilm");
         console.log(data);
 
-        for (let i = 0; i < data.length; i++) {     //une boucle va être créer pour chercher les informations des films
-            console.log(data[i].title);     //Les titres des films seront affiché dans la console
-            console.log(data[i].overview);    //Les descriptions des films seront affiché dans la console, il en manque parceque la langue choisie est en fr-CA
+        let section = document.querySelector(".liste-films");
+        console.log(section);
+
+        for (let i = 0; i < this.totalnbFilm; i++) {     //une boucle va être créer pour chercher les informations des films
+            //console.log(data[i].title);     //Les titres des films seront affiché dans la console
+            //console.log(data[i].overview);    //Les descriptions des films seront affiché dans la console, il en manque parceque la langue choisie est en fr-CA
+            let article = document.querySelector(".template .film").cloneNode(true);    //sert à cloner les articles qui a la classe template
+            //console.log(article);
+
+            article.querySelector("h2").innerHTML = data[i].title;
+
+             if(data[i].overview != "") {
+
+                article.querySelector(".description").innerHTML = data[i].overview;
+
+            } else {
+
+                article.querySelector(".description").innerHTML = "Aucune information n'est disponible";
+
+            }
+
+            let image = article.querySelector("img");
+             image.src = this.imgPath + "w300" + data[i].poster_path;
+            //console.log(this.imgPath + "w300" + data[i].poster_path);
+            image.alt = data[i].title;
+
+            article.querySelector("a").href = "fiche-film.html?id=" + data[i].id;       //Changer le href du lien a pour ajouter le id du film
+
+
+            section.appendChild(article);
         }
     }
+
+
+    requeteInfoFilm(movieId) {
+        let requete = new XMLHttpRequest();     //la variable nommé "requete" est défini par une nouvelle requete html
+        requete.addEventListener("loadend", this.retourRequeteInfoFilm.bind(this));     //quand l'information est chargé,
+        requete.open("GET", "https://api.themoviedb.org/3/movie/" + movieId + "?api_key=b22f9b20c68ad36893d3c8b75f29771a&language=en-US");    //dans "" mettre le request, voir dans vidéo 1h13min et plus tard dans 1h37min, sert à cherger les films dans la base de donnée dans movie db
+        requete.send();    //la requete est envoyé
+    }
+
+    retourRequeteInfoFilm(event) {
+        console.log("retourRequeteInfoFilm");
+        let target = event.currentTarget;     //la variable target vise la requete
+        //console.log(target.responseText);
+        let data = JSON.parse(target.responseText);     //transformer l'écriture incompréensible en écriture claire et compréhensible, c'est-à dire en json
+        console.log(data);
+
+        this.afficherInfoFilm(data);     //appelle la fonction "afficherDernierFilm" avec la variable "data" comme parametre, cela sert à ne pas oublier les données de la variable "data" dans une autre function, c'est-à dire la fonction "afficherInfoFilm"
+    }
+
+    afficherInfoFilm(data) {
+
+        //this.requeteActeur
+
+        document.querySelector("h1").innerHTML = data.title;
+        //Remplacer l'image
+
+        // console.log("afficherDernierFilm");
+        // console.log(data);
+        //
+        // let section = document.querySelector(".liste-films");
+        // console.log(section);
+        //
+        // for (let i = 0; i < this.totalnbFilm; i++) {     //une boucle va être créer pour chercher les informations des films
+        //     //console.log(data[i].title);     //Les titres des films seront affiché dans la console
+        //     //console.log(data[i].overview);    //Les descriptions des films seront affiché dans la console, il en manque parceque la langue choisie est en fr-CA
+        //     let article = document.querySelector(".template .film").cloneNode(true);    //sert à cloner les articles qui a la classe template
+        //     //console.log(article);
+        //
+        //     article.querySelector("h2").innerHTML = data[i].title;
+        //
+        //     if(data[i].overview != "") {
+        //
+        //         article.querySelector(".description").innerHTML = data[i].overview;
+        //
+        //     } else {
+        //
+        //         article.querySelector(".description").innerHTML = "Aucune information n'est disponible";
+        //
+        //     }
+        //
+        //     let image = article.querySelector("img");
+        //     image.src = this.imgPath + "w300" + data[i].poster_path;
+        //     //console.log(this.imgPath + "w300" + data[i].poster_path);
+        //     image.alt = data[i].title;
+        //
+        //     article.querySelector("a").href = "fiche-film.html?id=" + data[i].id;       //Changer le href du lien a pour ajouter le id du film
+        //
+        //
+        //     section.appendChild(article);
+        }
+
+    // requetteActeur(){
+    //
+    //     //requete vers GET credit(moviDB)
+    //
+    // }
+    //
+    // retourRequetteActeur() {
+    //
+    //     //faire attention JSON.parse
+    //
+    // }
+    //
+    // afficherActeur() {
+    //
+    //     //boucle for et clone de div.acteur
+    //
+    // }
 
 }
